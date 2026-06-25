@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    prompt_navigator (2.1.0)
+    prompt_navigator (2.2.0)
       rails (~> 8.1, >= 8.1.2)
 
 GEM

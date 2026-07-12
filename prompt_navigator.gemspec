@@ -8,7 +8,7 @@ Gem::Specification.new do |spec|
   spec.homepage    = "https://github.com/jdkim/prompt_manager"
   spec.summary     = "A Rails engine for managing and visualizing LLM prompt execution history."
   spec.description = "PromptNavigator is a Rails engine that provides a visual history stack UI for tracking LLM prompt executions. It includes a self-referencing PromptExecution model for building conversation trees, Stimulus-powered SVG arrow visualization between parent-child history cards, and automatic asset pipeline integration."
-  spec.license     = "MIT"
+  spec.license     = "Apache-2.0"
 
   spec.required_ruby_version = ">= 3.4.9"
 

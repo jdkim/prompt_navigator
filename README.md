@@ -250,10 +250,8 @@ Run the linter:
 $ bundle exec rubocop
 ```
 
-## Contributing
+## Related repositories
 
-Bug reports and pull requests are welcome on [GitHub](https://github.com/dhq-boiler/prompt_manager).
-
-## License
-
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+- [`llm_meta_client`](https://github.com/jdkim/llm_meta_client) — the main consumer of this gem
+- [`chat_manager`](https://github.com/jdkim/chat_manager) — used alongside this gem inside `llm_meta_client`
+- [`llm_meta_chat`](https://github.com/jdkim/llm_meta_chat) — a Rails chat application that indirectly uses this gem via `llm_meta_client`

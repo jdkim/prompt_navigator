@@ -51,6 +51,28 @@ This creates the `prompt_navigator_prompt_executions` table with the following c
 | `response` | text | The LLM response text |
 | `previous_id` | integer | Foreign key to the parent execution (for building history tree) |
 
+### Verify installation
+
+Run each of these against your host app after `bin/rails db:migrate`:
+
+```bash
+# a) The prompt_navigator_prompt_executions table was created
+bin/rails runner 'puts ActiveRecord::Base.connection.table_exists?("prompt_navigator_prompt_executions")'
+# → true
+
+# b) The history_list view helper is auto-mounted into ActionView
+bin/rails runner 'puts ApplicationController.helpers.respond_to?(:history_list)'
+# → true
+
+# c) The HistoryManageable controller concern is auto-included
+bin/rails runner 'puts ApplicationController.include?(PromptNavigator::HistoryManageable)'
+# → true
+
+# d) UUIDs are auto-generated on create
+bin/rails runner 'puts PromptNavigator::PromptExecution.new(prompt: "x", llm_platform: "openai", model: "gpt-4", response: "y").tap(&:save).execution_id'
+# → prints a fresh UUID
+```
+
 ## Usage
 
 ### Layout Setup

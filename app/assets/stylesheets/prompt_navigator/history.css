@@ -2,7 +2,8 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    padding-left: 32px; /* space for arrows */
+    padding-left: 32px; /* space for lineage arrows */
+    padding-right: 32px; /* space for supplement arrows */
     margin-top: 20px;
 }
 

@@ -14,6 +14,13 @@ export default class extends Controller {
     #supplementStroke = "#7c3aed"
     #supplementDash = "4 3"
     #startX = 32
+    // Supplement arcs run down the RIGHT gutter. Sharing the left one with the
+    // lineage arrows made both unreadable as soon as a prompt cited more than
+    // one node — several arcs of similar length overlapping in 32px. The two
+    // channels now have a side each, which also reinforces that they are
+    // different kinds of edge. Keep in step with .history-stack's
+    // padding-right in history.css.
+    #rightMargin = 32
     // Curve offset scales with the vertical gap so arcs of different lengths
     // nest instead of overlap. Bounded so short arcs don't collapse onto the
     // stack and long arcs don't escape the sidebar pane (the stack only has
@@ -162,19 +169,23 @@ export default class extends Controller {
             const path = this.#createCurvedArrowPath(startY, endY, verticalGap, {
                 stroke: this.#supplementStroke,
                 dash: this.#supplementDash,
-                markerId: this.#supplementMarkerId
+                markerId: this.#supplementMarkerId,
+                x: bbox.width - this.#rightMargin,
+                direction: 1
             })
             svg.appendChild(path)
         }
     }
 
     #createCurvedArrowPath(startY, endY, verticalGap, options = {}) {
-        const startX = this.#startX // left edge margin
+        const startX = options.x ?? this.#startX
+        // -1 bows outward to the left (lineage), +1 to the right (supplements).
+        const direction = options.direction ?? -1
         const curveOffset = Math.max(
             this.#minCurveOffset,
             Math.min(verticalGap * this.#curveScale, this.#maxCurveOffset)
         )
-        const curveX = startX - curveOffset // curve outward to the left
+        const curveX = startX + direction * curveOffset
         const pathData = `M ${startX} ${startY} C ${curveX} ${startY}, ${curveX} ${endY}, ${startX} ${endY}`
 
         const path = document.createElementNS("http://www.w3.org/2000/svg", "path")

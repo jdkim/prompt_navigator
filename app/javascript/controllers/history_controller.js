@@ -7,6 +7,12 @@ export default class extends Controller {
     // Private fields
     #drawArrowsBound
     #markerId = "history-arrow-head"
+    // Supplement edges get their own marker because the arrowhead is filled,
+    // not stroked — a dash pattern alone would leave the head solid grey.
+    #supplementMarkerId = "history-supplement-arrow-head"
+    #lineageStroke = "#555"
+    #supplementStroke = "#7c3aed"
+    #supplementDash = "4 3"
     #startX = 32
     // Curve offset scales with the vertical gap so arcs of different lengths
     // nest instead of overlap. Bounded so short arcs don't collapse onto the
@@ -48,11 +54,13 @@ export default class extends Controller {
         const cardMap = this.#buildCardMap()
         const bbox = this.#setupSvgDimensions(svg)
 
-        this.#ensureArrowMarker(svg)
+        this.#ensureArrowMarker(svg, this.#markerId, this.#lineageStroke)
+        this.#ensureArrowMarker(svg, this.#supplementMarkerId, this.#supplementStroke)
 
         // Iterate over Stimulus targets instead of querySelectorAll
         for (const card of this.cardsTargets) {
             this.#drawArrowForCard(card, cardMap, bbox, svg)
+            this.#drawSupplementArrows(card, cardMap, bbox, svg)
         }
     }
 
@@ -76,14 +84,14 @@ export default class extends Controller {
         return bbox
     }
 
-    #ensureArrowMarker(svg) {
-        if (svg.querySelector(`#${this.#markerId}`)) return
+    #ensureArrowMarker(svg, id, fill) {
+        if (svg.querySelector(`#${id}`)) return
 
         const marker = document.createElementNS(
             "http://www.w3.org/2000/svg",
             "marker"
         )
-        marker.setAttribute("id", this.#markerId)
+        marker.setAttribute("id", id)
         marker.setAttribute("markerWidth", "6")
         marker.setAttribute("markerHeight", "6")
         marker.setAttribute("refX", "5")
@@ -95,12 +103,16 @@ export default class extends Controller {
             "path"
         )
         arrowPath.setAttribute("d", "M0,0 L6,3 L0,6 Z")
-        arrowPath.setAttribute("fill", "#555")
+        arrowPath.setAttribute("fill", fill)
         marker.appendChild(arrowPath)
 
-        const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs")
+        // Reuse one <defs> so the second marker doesn't add a duplicate node.
+        let defs = svg.querySelector("defs")
+        if (!defs) {
+            defs = document.createElementNS("http://www.w3.org/2000/svg", "defs")
+            svg.appendChild(defs)
+        }
         defs.appendChild(marker)
-        svg.appendChild(defs)
     }
 
     #drawArrowForCard(card, cardMap, bbox, svg) {
@@ -124,7 +136,39 @@ export default class extends Controller {
         svg.appendChild(path)
     }
 
-    #createCurvedArrowPath(startY, endY, verticalGap) {
+    // Supplement edges: nodes whose content is attached to this prompt as
+    // reference material rather than entering as dialogue. Drawn dotted and in
+    // a distinct colour so the two channels are told apart at a glance.
+    //
+    // Unlike the lineage arrow above there is NO short-gap bail-out. That
+    // shortcut exists because the template draws a straight ↑/↓ between
+    // adjacent parent/child cards; nothing does that for supplements, so
+    // skipping short gaps would silently drop the arrow entirely.
+    #drawSupplementArrows(card, cardMap, bbox, svg) {
+        const raw = card.dataset.supplementUuids
+        if (!raw) return
+
+        const childRect = card.getBoundingClientRect()
+        const endY = childRect.top + childRect.height / 2 - bbox.top
+
+        for (const uuid of raw.split(",")) {
+            const sourceCard = cardMap.get(uuid.trim())
+            if (!sourceCard) continue
+
+            const sourceRect = sourceCard.getBoundingClientRect()
+            const startY = sourceRect.top + sourceRect.height / 2 - bbox.top
+            const verticalGap = Math.abs(endY - startY)
+
+            const path = this.#createCurvedArrowPath(startY, endY, verticalGap, {
+                stroke: this.#supplementStroke,
+                dash: this.#supplementDash,
+                markerId: this.#supplementMarkerId
+            })
+            svg.appendChild(path)
+        }
+    }
+
+    #createCurvedArrowPath(startY, endY, verticalGap, options = {}) {
         const startX = this.#startX // left edge margin
         const curveOffset = Math.max(
             this.#minCurveOffset,
@@ -136,9 +180,10 @@ export default class extends Controller {
         const path = document.createElementNS("http://www.w3.org/2000/svg", "path")
         path.setAttribute("d", pathData)
         path.setAttribute("fill", "none")
-        path.setAttribute("stroke", "#555")
+        path.setAttribute("stroke", options.stroke || this.#lineageStroke)
         path.setAttribute("stroke-width", "1.2")
-        path.setAttribute("marker-end", `url(#${this.#markerId})`)
+        if (options.dash) path.setAttribute("stroke-dasharray", options.dash)
+        path.setAttribute("marker-end", `url(#${options.markerId || this.#markerId})`)
 
         return path
     }

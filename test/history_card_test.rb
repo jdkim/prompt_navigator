@@ -90,4 +90,36 @@ class HistoryCardArrowTest < ActionView::TestCase
     assert_includes out, "see [my-docs]("
     assert_not_includes out, "[document]"
   end
+
+  # Supplement edges reach the arrow renderer through this attribute. The
+  # renderer reads `data-supplement-uuids` off each card and draws one dotted
+  # arrow per entry, so an omission here silently loses every reference arrow
+  # with no error anywhere.
+  test "emits the cited nodes as data-supplement-uuids, in selection order" do
+    a = PromptNavigator::PromptExecution.create!(prompt: "a", response: "r")
+    b = PromptNavigator::PromptExecution.create!(prompt: "b", response: "r")
+    PromptNavigator::Supplement.create!(prompt_execution: @child, supplement_execution: b, position: 0)
+    PromptNavigator::Supplement.create!(prompt_execution: @child, supplement_execution: a, position: 1)
+
+    out = render_card(ann: @child.reload, next_ann: nil)
+
+    assert_includes out, %(data-supplement-uuids="#{b.execution_id},#{a.execution_id}")
+  end
+
+  test "emits an empty data-supplement-uuids when nothing was cited" do
+    out = render_card(ann: @child, next_ann: nil)
+
+    assert_includes out, %(data-supplement-uuids="")
+  end
+
+  # The lineage arrow and the supplement arrows are separate channels; citing
+  # a node must not disturb the parent attribute the solid arrow depends on.
+  test "citing a node leaves the lineage parent attribute untouched" do
+    other = PromptNavigator::PromptExecution.create!(prompt: "o", response: "r")
+    PromptNavigator::Supplement.create!(prompt_execution: @child, supplement_execution: other, position: 0)
+
+    out = render_card(ann: @child.reload, next_ann: nil)
+
+    assert_includes out, %(data-parent-uuid="#{@parent.execution_id}")
+  end
 end

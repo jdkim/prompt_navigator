@@ -17,7 +17,17 @@
                      .strip
 %>
 
-<div class="history-card<%= ' is-active' if is_active %>" data-history-target="cards" data-uuid="<%= ann.execution_id %>" data-parent-uuid="<%= parent_uuid %>">
+<%
+  # Nodes this prompt cites. Their content reaches the model as material for
+  # this turn, not as dialogue — which is what the dotted arrow means, as
+  # against the solid one for the lineage.
+  #
+  # This reads an association per card. Hosts rendering a long pane should
+  # preload it (`includes(:supplements)`); chains are short enough that the
+  # gem does not force the issue, same reasoning as `ancestors`.
+  supplement_uuids = ann.respond_to?(:supplements) ? ann.supplements.map(&:execution_id) : []
+%>
+<div class="history-card<%= ' is-active' if is_active %>" data-history-target="cards" data-uuid="<%= ann.execution_id %>" data-parent-uuid="<%= parent_uuid %>" data-supplement-uuids="<%= supplement_uuids.join(",") %>">
   <div class="history-card-row">
     <%= link_to card_path.call(ann.execution_id), class: "history-card-link" do %>
       <div class="history-card-prompt"><%= truncate(display_prompt, length: 30) %></div>

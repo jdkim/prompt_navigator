@@ -123,9 +123,9 @@ class BrowserCase < ActiveSupport::TestCase
     attrs += %( data-supplement-uuids="#{supplements}") if supplements
     chip = if label
              %(<span class="history-card-platform-label" data-platform="google" title="#{label}">#{label}</span>)
-           else
+    else
              ""
-           end
+    end
     %(<div class="history-card" #{attrs}><div class="history-card-row">) +
       %(<a class="history-card-link" href="#"><div class="history-card-prompt">#{text}</div></a>) +
       chip +

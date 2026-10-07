@@ -117,12 +117,18 @@ class BrowserCase < ActiveSupport::TestCase
     driver.execute_script("return document.getElementById('stack').getBoundingClientRect().width")
   end
 
-  def card(uuid, parent: nil, supplements: nil, text: uuid)
+  def card(uuid, parent: nil, supplements: nil, text: uuid, label: nil)
     attrs = %(data-history-target="cards" data-uuid="#{uuid}")
     attrs += %( data-parent-uuid="#{parent}") if parent
     attrs += %( data-supplement-uuids="#{supplements}") if supplements
+    chip = if label
+             %(<span class="history-card-platform-label" data-platform="google" title="#{label}">#{label}</span>)
+           else
+             ""
+           end
     %(<div class="history-card" #{attrs}><div class="history-card-row">) +
       %(<a class="history-card-link" href="#"><div class="history-card-prompt">#{text}</div></a>) +
+      chip +
       %(</div></div>)
   end
 

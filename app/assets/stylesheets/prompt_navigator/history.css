@@ -113,6 +113,26 @@
     font-weight: 700;
     letter-spacing: 0.02em;
     flex-shrink: 0;
+
+    /* This label is whatever the host registered in `model_labels`, which is
+       usually the catalog's display name rather than a short platform word —
+       that is the point, so an Ollama-hosted Qwen reads "Qwen3.6 35B" and not
+       "Ollama". Catalog names get long: "Gemini 3.1 Flash Image (Nano Banana 2)"
+       is 38 characters. With no cap the chip claimed the whole row and the
+       prompt preview beside it collapsed to nothing, because the link is the
+       flex item that yields (`flex: 1; min-width: 0`) while this one does not
+       shrink. Cap it and ellipsise; the full name is already on the element's
+       `title`, so nothing is lost. */
+    max-width: 45%;
+    /* Border-box so the cap counts the padding. Without it `max-width` bounds
+       only the content box and the 12px of horizontal padding is added on top,
+       so a 45% cap renders at nearly 49% — enough to push the prompt under half
+       the row, which is the thing being prevented. */
+    box-sizing: border-box;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
     padding: 2px 6px;
     border-radius: 4px;
     min-width: 28px;

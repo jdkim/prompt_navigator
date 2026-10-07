@@ -56,4 +56,18 @@ class PromptNavigatorConfigurationTest < ActiveSupport::TestCase
     PromptNavigator.configure { |c| yielded = c }
     assert_same PromptNavigator.config, yielded
   end
+
+
+  test "model_label_for returns the registered label" do
+    PromptNavigator.configure { |c| c.model_labels["qwen3-6-35b"] = "Qwen3.6 35B" }
+    assert_equal "Qwen3.6 35B", PromptNavigator.model_label_for("qwen3-6-35b")
+  end
+
+  test "model_label_for returns nil rather than the platform fallback" do
+    # The distinction a caller persisting a label depends on: nil means "nothing
+    # registered", not "the label happens to equal the platform name".
+    assert_nil PromptNavigator.model_label_for("a-model-nobody-registered")
+    assert_nil PromptNavigator.model_label_for(nil)
+    assert_nil PromptNavigator.model_label_for("")
+  end
 end

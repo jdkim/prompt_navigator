@@ -33,6 +33,19 @@ module PromptNavigator
     yield config
   end
 
+  # The registered label for this model, or nil when none is known.
+  #
+  # Deliberately NOT falling back to the platform name: a caller that wants to
+  # PERSIST a label needs to tell "the catalog calls this Qwen3.6 35B" from
+  # "nothing is registered, so you are seeing the platform". Writing the fallback
+  # into a history row would freeze a worse label than the host may know later.
+  def self.model_label_for(model)
+    key = model.to_s
+    return nil if key.empty?
+
+    config.model_labels[key]
+  end
+
   # Resolution order: per-model override → per-platform → raw platform string.
   # Returns "" only when both inputs are blank.
   def self.label_for(platform:, model: nil)

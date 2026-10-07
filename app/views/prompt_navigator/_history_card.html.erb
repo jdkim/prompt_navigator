@@ -43,7 +43,7 @@
       <% end %>
     <% end %>
     <% if ann.llm_platform.present? %>
-      <% platform_label = PromptNavigator.label_for(platform: ann.llm_platform, model: ann.model) %>
+      <% platform_label = ann.display_label %>
       <% tooltip = ann.model.present? ? "#{ann.model} (#{ann.llm_platform})" : ann.llm_platform.to_s %>
       <span class="history-card-platform-label" data-platform="<%= ann.llm_platform %>" title="<%= tooltip %>"><%= platform_label %></span>
     <% end %>

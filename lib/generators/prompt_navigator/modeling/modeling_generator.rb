@@ -18,6 +18,7 @@ module PromptNavigator
       def add_migrations
         migration_template "db/migrate/20260129073026_create_prompt_navigator_prompt_executions.rb", "db/migrate/create_prompt_navigator_prompt_executions.rb"
         migration_template "db/migrate/20260913000000_add_prompt_navigator_supplements.rb", "db/migrate/add_prompt_navigator_supplements.rb"
+        migration_template "db/migrate/20261007000000_add_model_label_to_prompt_navigator_prompt_executions.rb", "db/migrate/add_model_label_to_prompt_navigator_prompt_executions.rb"
       end
     end
   end

@@ -19,6 +19,17 @@ module PromptNavigator
 
     before_create :set_execution_id
 
+    # What the sidebar shows for this turn.
+    #
+    # `model_label` is captured when the turn is written, so it keeps saying
+    # "Gemini 2.5 Flash Image (Nano Banana)" after that model leaves the host's
+    # catalog. Rows written before the column existed fall back to resolving
+    # against the live config, which is the old behaviour — the platform name
+    # once the model is gone.
+    def display_label
+      model_label.presence || PromptNavigator.label_for(platform: llm_platform, model: model)
+    end
+
     # Builds a context array from the direct lineage for summarization.
     # Each entry contains { prompt:, response: } from ancestor PromptExecutions.
     # Optionally limit to the most recent N ancestors.

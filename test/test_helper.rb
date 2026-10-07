@@ -38,6 +38,10 @@ ActiveRecord::Schema.define do
     t.timestamps
   end
 
+  # A column added after the table existed; `if_not_exists:` per-object, as the
+  # note above explains, so an already-persisted test.sqlite3 picks it up.
+  add_column :prompt_navigator_prompt_executions, :model_label, :string, if_not_exists: true
+
   create_table :prompt_navigator_supplements, if_not_exists: true do |t|
     t.references :prompt_execution,
                  foreign_key: { to_table: :prompt_navigator_prompt_executions },

@@ -65,9 +65,20 @@ class BrowserCase < ActiveSupport::TestCase
     FileUtils.cp(File.expand_path("../../app/javascript/controllers/history_controller.js", __dir__), root)
     FileUtils.cp(File.expand_path("../../app/assets/stylesheets/prompt_navigator/history.css", __dir__), root)
     File.write(File.join(root, "stimulus-shim.js"), STIMULUS_SHIM)
-    File.write(File.join(root, "index.html"), page(body))
 
-    driver.navigate.to "http://127.0.0.1:#{self.class.port}/index.html"
+    # A unique page per render, never a fixed index.html. Every test used to
+    # write the same file and navigate to the same URL with a shared browser
+    # profile, and `Last-Modified` has one-second resolution: two tests whose
+    # writes landed in the same second produced a 304, so the browser replayed
+    # the PREVIOUS test's page. That is invisible locally and showed up in CI as
+    # arrow counts belonging to a different test — "Expected: 1, Actual: 2" in
+    # one case and "Actual: 0" in another, with the failing test changing run to
+    # run. Measured before the fix: 7 of 8 same-second renders served stale HTML.
+    @render_seq = (@render_seq || 0) + 1
+    name = "page-#{Process.pid}-#{object_id}-#{@render_seq}.html"
+    File.write(File.join(root, name), page(body))
+
+    driver.navigate.to "http://127.0.0.1:#{self.class.port}/#{name}"
     # The module runs on load; wait for it rather than assuming.
     Selenium::WebDriver::Wait.new(timeout: 5).until { driver.execute_script("return window.__drawn === true") }
     driver
